@@ -14,7 +14,7 @@ Utilizza i seguenti componenti hardware:
   - 1 x Power Supply 12V per l'alimentazione.
   - 1 x LM2596 per regolare la tensione a 5V.
 
-Link a repo: creare un repository git (su un server tipo github o gitlab o altro pubblico) e linkarlo qui
+Link a repo: https://github.com/alek4/SmartDrinks
 
 Licenza scelta: GNU General Public License version 3 (GPLv3) 
 
