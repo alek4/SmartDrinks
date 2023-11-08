@@ -1,0 +1,186 @@
+esphome:
+  name: esphome-web-4fb739
+  friendly_name: h-brigde
+
+
+  on_boot:
+    then:
+      lambda: |-
+              id(recipes)[0][0] = 25; 
+              id(recipes)[0][1] = 25;
+              id(recipes)[0][2] = 50;
+              id(recipes)[0][3] = 0;
+
+              id(recipes)[1][0] = 0;
+              id(recipes)[1][1] = 0;
+              id(recipes)[1][2] = 0;
+              id(recipes)[1][3] = 0;
+
+              id(recipes)[2][0] = 5;
+              id(recipes)[2][1] = 0;
+              id(recipes)[2][2] = 0;
+              id(recipes)[2][3] = 10;
+
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+  # modifica time constant attraverso home assistant
+  services:
+  - service: set_time_constant
+    variables:
+      new_time_constant: int
+    then:
+      - globals.set:
+            id: time_constant
+            value: !lambda "return (new_time_constant);"
+      - logger.log:
+          format: "new value: %d"
+          args: [new_time_constant]
+
+ota:
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  manual_ip:
+    static_ip: 192.168.1.55
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "SmartDrinksAP"
+    password: "CdA8HFyWKLJL"
+
+captive_portal:
+
+globals:
+  - id: recipes
+    #     drink x pompa = ml
+    type: int[3][4]
+    restore_value: no
+  - id: current_drink_id
+    type: int
+    restore_value: no
+  - id: time_constant
+    type: int
+    restore_value: no
+    initial_value: "20"
+
+
+fan:
+  - platform: speed
+    id: fan1
+    output: pump_output1
+    name: "Pump 1"
+  - platform: speed
+    id: fan2
+    output: pump_output2
+    name: "Pump 2"
+  - platform: speed
+    id: fan3
+    output: pump_output3
+    name: "Pump 3"
+  - platform: speed
+    id: fan4
+    output: pump_output4
+    name: "Pump 4"
+
+sensor:
+  - platform: ultrasonic
+    id: distance
+    trigger_pin: D5
+    echo_pin: D6
+    name: "Ultrasonic Sensor"
+    update_interval: 100ms
+    pulse_time: 1ms
+    accuracy_decimals: 2
+
+output:
+  - platform: esp8266_pwm
+    id: pump_output1
+    pin: D0
+  - platform: esp8266_pwm
+    id: pump_output2
+    pin: D1
+  - platform: esp8266_pwm
+    id: pump_output3
+    pin: D2
+  - platform: esp8266_pwm
+    id: pump_output4
+    pin: D3
+    
+button:
+  - platform: template
+    name: Go
+    on_press:
+      then:
+        - if:
+            condition:
+                lambda: |-
+                        return id(distance).state < 0.04 && id(state).state == "idle";
+            then:
+                #- logger.log:
+                #    format: "active drink: %d"
+                #    args: ["id(recipes)[id(drink_option).active_index().value()][1]"]
+                - text_sensor.template.publish:
+                    id: state
+                    state: "running"
+
+                - globals.set:
+                    id: current_drink_id
+                    value: !lambda "return id(drink_option).active_index().value();"
+
+                - fan.turn_on: fan1
+                - delay: !lambda "return id(recipes)[id(current_drink_id)][0] * id(time_constant);"
+                - fan.turn_off: fan1
+
+                - fan.turn_on: fan2
+                - delay: !lambda "return id(recipes)[id(current_drink_id)][1] * id(time_constant);"
+                - fan.turn_off: fan2
+
+                - fan.turn_on: fan3
+                - delay: !lambda "return id(recipes)[id(current_drink_id)][2] * id(time_constant);"
+                - fan.turn_off: fan3
+                
+                - fan.turn_on: fan4
+                - delay: !lambda "return id(recipes)[id(current_drink_id)][3] * id(time_constant);"
+                - fan.turn_off: fan4
+
+                - text_sensor.template.publish:
+                    id: state
+                    state: "idle"
+
+        - logger.log:
+            format: "Chosen option: %s"
+            args: ["id(drink_option).state.c_str()"]
+
+text_sensor:
+  - platform: template
+    id: state
+    name: "Template Text Sensor"
+    lambda: |-
+      return {"idle"};
+    update_interval: 60s
+
+select:
+  - platform: template
+    name: Drink
+    id: drink_option
+    options:
+      - "Negroni"
+      - "Gin and Tonic"
+      - "Alfredo"
+    initial_option: "Negroni"
+    optimistic: true
