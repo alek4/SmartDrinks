@@ -4,12 +4,7 @@ Autore: Alessandro Bordonali
 
 ## Introduzione:
 
-Smart Drinks è un progetto basato su ESP8266 progettato per automatizzare la preparazione di drink, garantendo un dosaggio preciso degli ingredienti e prevenendo l'avvio del dispositivo in assenza di un bicchiere.
-
-## Caratteristiche Principali:
-
-- Dosaggio Preciso: Il dispositivo assicura una misurazione accurata degli ingredienti.
-- Rilevamento del Bicchiere: Grazie al sensore ultrasonico HC-SR04, il sistema rileva la presenza di un bicchiere, evitando l'attivazione in assenza di contenitore.
+Smart Drinks è un progetto basato su ESP8266 progettato per automatizzare la preparazione di drink, miscelando gli ingredienti e prevenendo l'avvio del dispositivo in assenza di un bicchiere.
 
 ## Componenti Hardware:
 
@@ -38,11 +33,15 @@ Il progetto ha avuto inizio come un prototipo su breadboard. I componenti, inizi
 
 ![image 2](./asset/images/image_2.jpg)
 
+![image 3](./asset/images/image_3.jpg)
+
+![image 4](./asset/images/image_4.jpg)
+
 ## Sfide e Soluzioni:
 
 Durante lo sviluppo, sono state affrontate diverse sfide, come la gestione dello stato iniziale dei pin dell'ESP8266 durante l'avvio, e la precisione nella dispensazione di liquidi senza l'ausilio di un flussometro.
 Lo stato di molti pin all'avvio della mia board non rispettava la documentazione fornita dal produttore; la soluzione trovata è stato usare i pin di abilitazione dei ponti H per abilitare le pompe, ma solamente dopo aver finito la fase di boot del MCU.
-Ho notato che per piccole quantità di liquido le pompe erano precise (es. 10ml), mentre per grandi quantità (es. 40ml) la precisione diminuiva; la soluzione che ho trovato è stata suddividere in dosi più piccole l'erogazione dell'ingrediente: per esempio se dobbiamo erogare 40ml di liquido, il device eroghererà 4 volte 10ml.
+Ho notato che per piccole quantità di liquido le pompe erano precise (es. 10ml), mentre per grandi quantità (es. 40ml) la precisione diminuiva; la soluzione che ho trovato è stata suddividere in dosi più piccole l'erogazione dell'ingrediente.
 
 ## State Diagram
 
